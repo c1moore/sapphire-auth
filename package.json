@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "nyc mocha",
+    "test": "npm run build && nyc mocha",
     "build": "tsc"
   },
   "repository": {
@@ -16,6 +16,25 @@
   },
   "author": "Calvin Moore <c1moore@outlook.com>",
   "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1"
+  },
+  "devDependencies": {
+    "should": "^13.2.3",
+    "sinon": "^7.3.2"
+  },
+  "nyc": {
+    "all": true,
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "exclude": [
+      "**/test/**",
+      "**/src/**",
+      "**/node_modules/**",
+      "**/coverage/**"
+    ]
+  }
 }
