@@ -51,11 +51,13 @@ export default class SapphireAuth {
    * Sapphire.
    *
    * @param {string} method the HTTP method used for this request
-   * @param {string} url the URL of the resource being requested.  This does not include the query
-   * param string
-   * @param {string} headers the headers being sent with the request
-   * @param {string} params the parameters included in the request.  This includes query string
-   * params, URL encoded parameters (as an object), or a JSON body
+   * @param {string} url the URL of the resource being requested.  This does not include
+   * the query param string
+   * @param {{ [ headerName: string ]: string }} headers the headers being sent with the
+   * request
+   * @param {{ [ paramName: string ]: any }} params the parameters included in the
+   * request.  This includes query string params, URL encoded parameters (as an object),
+   * or a JSON body
    *
    * @returns {string} the signature
    */
@@ -74,11 +76,13 @@ export default class SapphireAuth {
    * Validates an HTTP request or response.
    *
    * @param {string} method the HTTP method used for this request
-   * @param {string} url the URL of the resource being requested.  This does not include the query
-   * param string
-   * @param {string} headers the headers being sent with the request
-   * @param {string} params the parameters included in the request.  This includes query string
-   * params, URL encoded parameters (as an object), or a JSON body
+   * @param {string} url the URL of the resource being requested.  This does not include
+   * the query param string
+   * @param {{ [ headerName: string ]: string }} headers the headers being sent with the
+   * request
+   * @param {{ [ paramName: string ]: any }} params the parameters included in the
+   * request.  This includes query string params, URL encoded parameters (as an object),
+   * or a JSON body
    *
    * @returns {boolean} true if the message is valid; false otherwise
    */
