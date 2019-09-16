@@ -9,7 +9,11 @@ describe('SapphireAuth', () => {
   const apiKey = 'abcdefghijklmnopqrstuvwxyz';
   const apiSecret = '1234567989-abcd';
 
-  const auth = new SapphireAuth(apiKey, apiSecret);
+  let auth;
+
+  beforeEach(() => {
+    auth = new SapphireAuth(apiKey, apiSecret);
+  });
 
   describe('generateSignature()', () => {
     it('should generate a valid signature with a flat params object', () => {
@@ -72,6 +76,73 @@ describe('SapphireAuth', () => {
       );
 
       signature.should.equal('oZSPpDI/MVCPb1imZyp5N+9H+FFG8+Umkx2P3nj0pwo=');
+    });
+  });
+
+  describe('isExpressRequestValid()', () => {
+    let req;
+    let sandbox;
+
+    beforeEach(() => {
+      req = {
+        protocol:    'https',
+        hostname:    'c1moore.codes',
+        originalUrl: '/api/test?something=true&somethingElse=false',
+        method:      'POST',
+        headers:     {},
+        query:       {
+          something:     true,
+          somethingElse: false,
+        },
+        body: {
+          test: true,
+        },
+      };
+    });
+
+    beforeEach(() => {
+      sandbox = Sinon.createSandbox();
+      sandbox.stub(SapphireAuth.prototype, 'isMessageValid');
+
+      auth = new SapphireAuth(apiKey, apiSecret);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    })
+
+    it('should use the appropriate values from the Express object', () => {
+      auth.isExpressRequestValid(req);
+
+      Sinon.assert.calledOnce(SapphireAuth.prototype.isMessageValid);
+      Sinon.assert.calledWith(
+        SapphireAuth.prototype.isMessageValid,
+        req.method,
+        `${req.protocol}://${req.hostname}${req.originalUrl.split('?')[0]}`,
+        req.headers,
+        Sinon.match
+          .has('something', true)
+          .and(Sinon.match.has('somethingElse', false))
+          .and(Sinon.match.has('test', true))
+      );
+    });
+
+    it('should use the protocol override if specified', () => {
+      const protocol = 'fake';
+
+      auth.isExpressRequestValid(req, { protocol });
+
+      Sinon.assert.calledOnce(SapphireAuth.prototype.isMessageValid);
+      Sinon.assert.calledWith(SapphireAuth.prototype.isMessageValid, Sinon.match.any, `${protocol}://${req.hostname}${req.originalUrl.split('?')[0]}`);
+    });
+
+    it('should use the hostname override if specified', () => {
+      const hostname = `subdomain.${req.hostname}`;
+
+      auth.isExpressRequestValid(req, { hostname });
+
+      Sinon.assert.calledOnce(SapphireAuth.prototype.isMessageValid);
+      Sinon.assert.calledWith(SapphireAuth.prototype.isMessageValid, Sinon.match.any, `${req.protocol}://${hostname}${req.originalUrl.split('?')[0]}`);
     });
   });
 

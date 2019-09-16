@@ -1,4 +1,5 @@
 import { createHmac } from 'crypto';
+import { Request } from 'express';
 
 let nonces: { [ apiKey: string ]: Set<string> } = {};
 
@@ -61,7 +62,7 @@ export default class SapphireAuth {
    *
    * @returns {string} the signature
    */
-  generateSignature(method: string, url: string, headers: { [ headerName: string ]: string }, params: { [ paramName: string ]: any }): string {
+  generateSignature(method: string, url: string, headers: { [ headerName: string ]: string | string[] | undefined }, params: { [ paramName: string ]: any }): string {
     const normalizedHeaderStr = this._generateNormalizedHeaderString(headers);
     const normalizedRequestStr = this._generateNormalizedString(params);
 
@@ -70,6 +71,26 @@ export default class SapphireAuth {
     const hmac = createHmac('SHA256', this.apiSecret);
 
     return hmac.update(token).digest('base64');
+  }
+
+  /**
+   * A shorthand for `isMessageValid()` for Express.js apps.
+   *
+   * @see SapphireAuth#isMessageValid
+   *
+   * @param {Request} req the Express.js request object
+   * @param {[object]} overrides any overrides that should be applied to the request
+   * object.  This is useful, for example, if you are behind another application that
+   * redirects traffic to your Express instance.
+   * @param {[string]} overrides.protocol the protocol to use when generating the
+   * signature
+   * @param {[string]} overrides.hostname the hostname to use when generating the
+   * signature
+   */
+  isExpressRequestValid(req: Request, overrides: { protocol?: string, hostname?: string } = {}): boolean {
+    const url = `${overrides.protocol || req.protocol}://${overrides.hostname || req.hostname}${req.originalUrl.split('?')[0]}`;
+
+    return this.isMessageValid(req.method, url, req.headers, { ...req.query, ...req.body });
   }
 
   /**
@@ -86,15 +107,15 @@ export default class SapphireAuth {
    *
    * @returns {boolean} true if the message is valid; false otherwise
    */
-  isMessageValid(method: string, url: string, headers: { [ headerName: string ]: string }, params: { [ paramName: string ]: any }): boolean {
-    const timestamp = headers[SapphireAuth.timestampHeaderName] || headers[SapphireAuth.timestampHeaderName.toLowerCase()];
+  isMessageValid(method: string, url: string, headers: { [ headerName: string ]: string | string[] | undefined }, params: { [ paramName: string ]: any }): boolean {
+    const timestamp = <string> headers[SapphireAuth.timestampHeaderName] || <string> headers[SapphireAuth.timestampHeaderName.toLowerCase()];
     if (!timestamp || (parseInt(timestamp, 10) + 1000) <= Date.now()) {
       return false;
     }
 
-    const apiKey = headers[SapphireAuth.apiKeyHeaderName] || headers[SapphireAuth.apiKeyHeaderName.toLowerCase()];
+    const apiKey = <string> headers[SapphireAuth.apiKeyHeaderName] || <string> headers[SapphireAuth.apiKeyHeaderName.toLowerCase()];
 
-    const nonce = headers[SapphireAuth.nonceHeaderName] || headers[SapphireAuth.nonceHeaderName.toLowerCase()];
+    const nonce = <string> headers[SapphireAuth.nonceHeaderName] || <string> headers[SapphireAuth.nonceHeaderName.toLowerCase()];
     if (nonce) {
       if (!nonces[apiKey]) {
         nonces[apiKey] = new Set<string>();
@@ -118,7 +139,7 @@ export default class SapphireAuth {
     return (signature === this.generateSignature(method, url, headers, params));
   }
 
-  private _generateNormalizedHeaderString(headers: { [ headerName: string ]: string }): string {
+  private _generateNormalizedHeaderString(headers: { [ headerName: string ]: string | string[] | undefined }): string {
     const normalizedSignatureHeaderName = SapphireAuth.signatureHeaderName.toLowerCase();
 
     const sapphireHeaders: { [ headerName: string ]: string } = {};
@@ -127,7 +148,7 @@ export default class SapphireAuth {
       const normalizedHeaderName = headerName.toLowerCase();
 
       if (normalizedHeaderName.startsWith('x-sapphire-') && normalizedHeaderName !== normalizedSignatureHeaderName) {
-        sapphireHeaders[normalizedHeaderName] = headers[headerName];
+        sapphireHeaders[normalizedHeaderName] = <string> headers[headerName];
       }
     });
 

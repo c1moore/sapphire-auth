@@ -35,8 +35,23 @@ Generates the Sapphire signature that should be added to the headers in a reques
 | headers | { [ headerName: string ]: string } | the headers being sent with the request |
 | params | { [ paramName: string ]: any } | the parameters included in the request.  This includes query string params, URL encoded parameters (as an object), or a JSON body |
 
+#### isExpressRequestValid()
+A shorthand for `isMessageValid()` for Express.js apps.
+
+See [isMessageValid()](#ismessagevalid) for more information.
+
+##### Parameters
+| Name | Type | Description |
+|------|------|-------------|
+| req | Request | The Express.js request object. |
+| overrides | [object] | Optional.  Any overrides that should be applied to the request object.  This is useful, for example, if you are behind another application that redirects traffic to your Express instance. |
+| overrides.protocol | [string] | Optional. The protocol to use when generating the signature. |
+| overrides.hostname | [string] | Optional. The hostname to use when generating the signature.
+
 #### isMessageValid()
 Validates an HTTP request or response.
+
+Returns true if the message contains a valid signature; false otherwise.
 
 ##### Parameters
 | Name | Type | Description |

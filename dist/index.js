@@ -26,6 +26,10 @@ class SapphireAuth {
         const hmac = crypto_1.createHmac('SHA256', this.apiSecret);
         return hmac.update(token).digest('base64');
     }
+    isExpressRequestValid(req, overrides = {}) {
+        const url = `${overrides.protocol || req.protocol}://${overrides.hostname || req.hostname}${req.originalUrl.split('?')[0]}`;
+        return this.isMessageValid(req.method, url, req.headers, Object.assign({}, req.query, req.body));
+    }
     isMessageValid(method, url, headers, params) {
         const timestamp = headers[SapphireAuth.timestampHeaderName] || headers[SapphireAuth.timestampHeaderName.toLowerCase()];
         if (!timestamp || (parseInt(timestamp, 10) + 1000) <= Date.now()) {
