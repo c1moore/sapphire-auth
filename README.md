@@ -1,5 +1,5 @@
 # sapphire-auth
-Library for authenticating requests to/from Sapphire Telesolutions API.
+Library for authenticating requests using an OAuth-like signing method.
 
 ## Install
 ```
