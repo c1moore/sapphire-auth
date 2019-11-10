@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/c1moore/sapphire-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/c1moore/sapphire-auth) [![CircleCI](https://circleci.com/gh/c1moore/sapphire-auth.svg?style=svg)](https://circleci.com/gh/c1moore/sapphire-auth)
+
 # sapphire-auth
 Library for authenticating requests using an OAuth-like signing method.
 
